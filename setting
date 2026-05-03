@@ -1,0 +1,9 @@
+프론트엔드
+npm install
+npm start
+
+
+백엔드
+npm init -y
+npm install express socket.io
+node intex.js

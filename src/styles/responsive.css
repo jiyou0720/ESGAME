@@ -1,0 +1,273 @@
+/* src/styles/responsive.css
+   브레이크포인트:
+   - 모바일:  ~ 480px
+   - 태블릿:  481px ~ 768px
+   - 소형 PC: 769px ~ 1024px
+   - 데스크탑: 1025px ~
+*/
+
+/* ─── 도착 칸 배너 ──────────────────────────────────────────────────────────── */
+.landed-cell-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%) scale(0.85);
+  opacity: 0;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #000;
+  font-size: clamp(16px, 3vw, 24px);
+  font-weight: 900;
+  padding: clamp(10px, 2vw, 18px) clamp(20px, 4vw, 40px);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.6);
+  pointer-events: none;
+  z-index: 30;
+  white-space: nowrap;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.landed-cell-banner.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.landed-arrow { font-size: clamp(14px, 2.5vw, 20px); animation: bounce 0.6s infinite alternate; }
+@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(4px); } }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   모바일 (~ 480px)
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* 메인 메뉴 */
+  .game-title     { font-size: 28px; }
+  .logo-coin      { font-size: 52px; }
+  .menu-buttons   { gap: 10px; }
+  .btn-xl         { padding: 14px 24px; font-size: 16px; }
+  .input-panel    { padding: 22px 16px; gap: 12px; }
+  .input-title    { font-size: 18px; }
+  .input-group input { font-size: 15px; padding: 10px 12px; }
+  .code-input     { font-size: 20px !important; letter-spacing: 6px; }
+  .main-footer p  { font-size: 11px; }
+
+  /* 로비 */
+  .lobby-screen   { padding: 12px; gap: 12px; }
+  .lobby-title    { font-size: 18px; }
+  .room-code span { font-size: 24px; letter-spacing: 5px; }
+  .players-grid   { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .player-slot    { padding: 10px; min-height: 64px; gap: 8px; }
+  .player-avatar  { font-size: 24px; width: 38px; height: 38px; }
+  .player-name    { font-size: 13px; }
+  .rules-list     { grid-template-columns: 1fr; }
+  .rule-item      { font-size: 11px; }
+  .lobby-rules    { padding: 12px 14px; }
+  .lobby-rules h3 { font-size: 12px; }
+
+  /* 직업 선택 */
+  .job-select-screen  { padding: 12px; gap: 14px; }
+  .job-title          { font-size: 20px; }
+  .job-subtitle       { font-size: 12px; }
+  .jobs-grid          { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .job-card           { padding: 14px 10px; gap: 6px; }
+  .job-emoji          { font-size: 32px; }
+  .job-name           { font-size: 13px; }
+  .salary-value       { font-size: 12px; }
+  .special-text       { font-size: 10px; }
+  .job-confirm-area   { padding: 0 8px; }
+
+  /* 게임 보드 HUD */
+  .hud-overlay        { padding: 8px; }
+  .my-turn-badge,
+  .other-turn-badge   { font-size: 11px; padding: 6px 10px; }
+  .hud-room-code      { font-size: 10px; padding: 4px 8px; }
+
+  /* 플레이어 HUD: 모바일에서는 하단 가로 배치 */
+  .player-hud {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: 100%;
+    width: 100%;
+    gap: 4px;
+    order: 3;
+    margin-top: auto;
+    padding-bottom: 80px; /* 주사위 버튼 공간 */
+  }
+  .hud-player-card {
+    flex: 1;
+    min-width: 120px;
+    padding: 5px 8px;
+    gap: 5px;
+    border-radius: 10px;
+  }
+  .hud-avatar       { font-size: 16px; }
+  .hud-name         { font-size: 10px; }
+  .hud-job          { font-size: 9px; }
+  .hud-stats        { grid-template-columns: repeat(4, 1fr); gap: 1px 3px; }
+  .hud-stat         { font-size: 9px; }
+
+  /* 주사위 버튼 */
+  .btn-dice         { font-size: 15px; padding: 12px 24px; border-radius: 24px; }
+  .dice-emoji       { font-size: 20px; }
+  .btn-end-turn     { font-size: 14px; padding: 11px 22px; }
+
+  /* 이벤트 배너 */
+  .event-banner     { max-width: 95%; padding: 10px 14px; top: 52px; }
+  .banner-icon      { font-size: 22px; }
+  .banner-label     { font-size: 12px; }
+  .banner-desc      { font-size: 11px; }
+  .banner-amount    { font-size: 14px; }
+
+  /* 모달 */
+  .action-modal     { padding: 20px 14px; gap: 12px; border-radius: 20px; }
+  .modal-header     { font-size: 18px; }
+  .modal-sub        { font-size: 13px; }
+  .modal-desc       { font-size: 12px; }
+  .assets-grid      { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .asset-card       { padding: 10px 8px; }
+  .asset-emoji      { font-size: 22px; }
+  .asset-name       { font-size: 11px; }
+  .asset-price      { font-size: 11px; }
+  .asset-rent       { font-size: 10px; }
+  .preset-btn       { padding: 6px 10px; font-size: 11px; }
+  .amount-input     { font-size: 15px; padding: 10px; }
+  .quiz-question    { font-size: 14px; }
+  .quiz-option      { font-size: 12px; padding: 10px 12px; }
+  .option-num       { font-size: 15px; width: 20px; }
+  .quiz-result      { font-size: 15px; }
+
+  /* 결과 화면 */
+  .result-content   { padding: 20px 12px; gap: 16px; }
+  .winner-trophy    { font-size: 48px; }
+  .winner-name      { font-size: 22px; }
+  .winner-score     { font-size: 16px; }
+  .rank-card        { padding: 10px 12px; gap: 8px; }
+  .rank-medal       { font-size: 20px; }
+  .rank-avatar      { font-size: 22px; }
+  .rank-player-name { font-size: 13px; }
+  .rank-job         { font-size: 11px; }
+  .score-breakdown  { font-size: 10px; gap: 5px; }
+  .total-score      { font-size: 12px; }
+  .total-score strong { font-size: 15px; }
+  .explain-grid     { grid-template-columns: repeat(2, 1fr); font-size: 11px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   태블릿 (481px ~ 768px) - iPad, 갤럭시 탭 등
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 481px) and (max-width: 768px) {
+
+  .game-title   { font-size: 36px; }
+  .logo-coin    { font-size: 60px; }
+  .btn-xl       { padding: 15px 30px; font-size: 17px; }
+
+  /* 로비 */
+  .players-grid { grid-template-columns: repeat(2, 1fr); }
+  .player-slot  { min-height: 72px; }
+
+  /* 직업 */
+  .jobs-grid    { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .job-card     { padding: 16px 12px; }
+  .job-emoji    { font-size: 36px; }
+
+  /* 게임 보드 HUD */
+  .player-hud {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: 100%;
+    width: 100%;
+    gap: 6px;
+    margin-top: auto;
+    padding-bottom: 90px;
+  }
+  .hud-player-card {
+    flex: 1;
+    min-width: 140px;
+    padding: 6px 10px;
+  }
+  .hud-avatar   { font-size: 18px; }
+  .hud-name     { font-size: 11px; }
+  .hud-stats    { grid-template-columns: repeat(4, 1fr); }
+  .hud-stat     { font-size: 10px; }
+
+  /* 모달 */
+  .assets-grid  { grid-template-columns: repeat(2, 1fr); }
+  .jobs-grid    { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   소형 PC / 가로 태블릿 (769px ~ 1024px)
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .jobs-grid    { grid-template-columns: repeat(3, 1fr); }
+  .player-hud   { max-width: 200px; }
+  .hud-player-card { padding: 7px 10px; }
+  .hud-name     { font-size: 11px; }
+  .hud-stat     { font-size: 10px; }
+
+  /* 모달 크기 조정 */
+  .action-modal { max-width: 420px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   데스크탑 (1025px ~)
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 1025px) {
+  .jobs-grid  { grid-template-columns: repeat(5, 1fr); }
+  .player-hud { max-width: 240px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   가로 모드 모바일 (landscape)
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) and (orientation: landscape) {
+
+  /* 로비/메뉴: 스크롤 허용 */
+  .lobby-screen,
+  .job-select-screen { overflow-y: auto; }
+
+  /* HUD: 더 컴팩트하게 */
+  .player-hud {
+    position: absolute;
+    right: 8px;
+    top: 44px;
+    max-width: 160px;
+    flex-direction: column;
+    padding-bottom: 0;
+  }
+  .hud-player-card { padding: 4px 7px; gap: 4px; }
+  .hud-avatar  { font-size: 14px; }
+  .hud-name    { font-size: 9px; }
+  .hud-stats   { grid-template-columns: repeat(2, 1fr); gap: 1px 4px; }
+  .hud-stat    { font-size: 9px; }
+
+  /* 주사위 버튼: 하단 중앙 */
+  .dice-btn-wrap { bottom: 12px; }
+  .btn-dice      { font-size: 13px; padding: 10px 20px; }
+
+  /* 직업 카드 가로 배치 */
+  .jobs-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .job-card  { padding: 10px 6px; gap: 4px; }
+  .job-emoji { font-size: 26px; }
+  .job-name  { font-size: 11px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   터치 디바이스 공통 (호버 없는 환경)
+═══════════════════════════════════════════════════════════════════════════════ */
+@media (hover: none) {
+  /* 호버 효과 제거, 탭 피드백으로 대체 */
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .job-card:hover,
+  .asset-card:hover { transform: none; box-shadow: inherit; }
+
+  .btn-primary:active  { transform: scale(0.97); }
+  .btn-dice:active     { transform: scale(0.95); }
+  .job-card:active     { transform: scale(0.97); border-color: var(--job-color); }
+  .asset-card:active   { transform: scale(0.97); }
+  .quiz-option:active  { background: rgba(74,144,226,0.2); }
+}

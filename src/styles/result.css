@@ -1,0 +1,54 @@
+/* src/styles/result.css */
+.result-screen {
+  background:radial-gradient(ellipse at 50% 0%,#2a1a00 0%,#0D0D1A 60%);
+  justify-content:flex-start; overflow-y:auto;
+}
+.result-bg { position:absolute;inset:0;pointer-events:none;overflow:hidden; }
+
+.confetti-wrap { position:absolute;inset:0; }
+.confetti-piece {
+  position:absolute;top:-10px;left:var(--x);width:8px;height:14px;
+  background:var(--color);border-radius:2px;
+  animation:confettiFall 3s var(--delay) infinite linear;
+}
+@keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:.3} }
+
+.result-content {
+  display:flex;flex-direction:column;align-items:center;gap:24px;
+  padding:30px 20px;width:100%;max-width:640px;z-index:1;margin:0 auto;
+}
+
+.winner-announcement { text-align:center;opacity:0;transform:scale(.8);transition:all .5s cubic-bezier(.34,1.56,.64,1); }
+.winner-announcement.visible { opacity:1;transform:scale(1); }
+.winner-trophy { font-size:64px;filter:drop-shadow(0 0 20px rgba(255,215,0,.6));animation:floatBob 2.5s ease-in-out infinite; }
+.winner-name   { font-size:clamp(24px,5vw,40px);font-weight:900;color:var(--color-accent);text-shadow:0 0 30px rgba(255,215,0,.4);margin-top:8px; }
+.winner-score  { font-size:20px;color:var(--color-muted);margin-top:4px; }
+
+.rankings { width:100%;display:flex;flex-direction:column;gap:10px;opacity:0;transform:translateY(20px);transition:all .5s ease .3s; }
+.rankings.visible { opacity:1;transform:translateY(0); }
+
+.rank-card {
+  background:var(--color-surface);border:1.5px solid var(--color-border);
+  border-radius:var(--radius-lg);padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  animation:fadeUp .4s ease calc(var(--delay)) both;
+}
+.rank-card.winner { border-color:var(--color-accent);background:linear-gradient(135deg,rgba(255,215,0,.1),var(--color-surface));box-shadow:0 4px 20px rgba(255,215,0,.2); }
+.rank-card.is-me  { border-color:var(--color-primary); }
+
+.rank-medal  { font-size:24px;flex-shrink:0; }
+.rank-avatar { font-size:28px;flex-shrink:0; }
+.rank-info   { flex:1; }
+.rank-player-name { font-size:15px;font-weight:700; }
+.rank-job    { font-size:12px;color:var(--color-muted);margin-top:2px; }
+.rank-scores { text-align:right; }
+.score-breakdown { display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;font-size:11px;color:var(--color-muted); }
+.total-score { font-size:14px;color:var(--color-text);margin-top:4px; }
+.total-score strong { color:var(--color-accent);font-size:18px; }
+
+.score-explain { width:100%;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px 20px;opacity:0;transform:translateY(20px);transition:all .5s ease .6s; }
+.score-explain.visible { opacity:1;transform:translateY(0); }
+.score-explain h3 { font-size:14px;color:var(--color-accent);margin-bottom:10px; }
+.explain-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;font-size:12px;color:var(--color-muted); }
+
+.result-actions { padding-bottom:20px; }
