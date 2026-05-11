@@ -7,7 +7,9 @@ import { rollDice, endTurn } from '../../socket/socketManager';
 import ActionModal from '../ui/ActionModal';
 import PlayerHUD from '../ui/PlayerHUD';
 import EventBanner from '../ui/EventBanner';
+import RotatePrompt from '../ui/RotatePrompt';
 
+// 전역 Phaser 인스턴스 - 싱글턴 유지
 let phaserGame = null;
 
 const CELL_LABELS = {
@@ -17,6 +19,12 @@ const CELL_LABELS = {
   EVENT:  '🎲 이벤트 칸', QUIZ:   '❓ 퀴즈 칸',
   DONATE: '❤️ 나눔 칸',   GROWTH: '⬆️ 성장 칸',
 };
+
+const isMobileDevice = () =>
+  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+  Math.min(window.screen.width, window.screen.height) < 600;
+
+const isPortrait = () => window.innerHeight > window.innerWidth;
 
 export default function GameBoardScreen() {
   const containerRef = useRef(null);
@@ -32,81 +40,91 @@ export default function GameBoardScreen() {
   const [diceRolled, setDiceRolled] = useState(false);
   const [landedCell, setLandedCell] = useState(null);
   const [showLanded, setShowLanded] = useState(false);
-  const [isMobile,   setIsMobile]   = useState(window.innerWidth < 500);
+  const [mobile,     setMobile]     = useState(isMobileDevice());
+  const [portrait,   setPortrait]   = useState(isPortrait());
 
-  // 반응형 감지
+  // 방향 감지 (딜레이로 실제 크기 반영 대기)
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 500);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    let timer = null;
+    const onOrientationChange = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        setMobile(isMobileDevice());
+        setPortrait(isPortrait());
+      }, 200);
+    };
+    window.addEventListener('resize', onOrientationChange);
+    window.addEventListener('orientationchange', onOrientationChange);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', onOrientationChange);
+      window.removeEventListener('orientationchange', onOrientationChange);
+    };
   }, []);
 
-  // Phaser 초기화
+  // Phaser 초기화 - 딱 한 번만 생성, 절대 재생성하지 않음
+  // 방향 전환은 Phaser 내부 Scale.RESIZE 가 자동 처리
   useEffect(() => {
     if (!containerRef.current || phaserGame) return;
 
     phaserGame = new Phaser.Game({
-      type: Phaser.AUTO,
-      parent: containerRef.current,
+      type:            Phaser.CANVAS, // WebGL 대신 Canvas → Framebuffer 오류 원천 차단
+      parent:          containerRef.current,
       backgroundColor: '#1A1A2E',
-      scene: [BoardScene],
+      scene:           [BoardScene],
       scale: {
-        mode: Phaser.Scale.RESIZE,
+        mode:       Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        width:  '100%',
-        height: '100%',
+        width:      '100%',
+        height:     '100%',
       },
     });
 
     const tryGetScene = setInterval(() => {
       const scene = phaserGame?.scene?.getScene('BoardScene');
-      if (scene) { boardRef.current = scene; clearInterval(tryGetScene); }
-    }, 100);
+      if (scene) {
+        boardRef.current = scene;
+        clearInterval(tryGetScene);
+        if (gameState) scene.events.emit('updateGameState', gameState);
+      }
+    }, 80);
 
+    return () => clearInterval(tryGetScene);
+  }, []); // 마운트 시 딱 한 번
+
+  // 컴포넌트 언마운트 시만 Phaser 정리
+  useEffect(() => {
     return () => {
-      clearInterval(tryGetScene);
-      if (phaserGame) { phaserGame.destroy(true); phaserGame = null; }
+      if (phaserGame) {
+        phaserGame.destroy(true);
+        phaserGame = null;
+        boardRef.current = null;
+      }
     };
   }, []);
 
-  // 게임 상태 → Phaser
   useEffect(() => {
     if (boardRef.current && gameState) {
       boardRef.current.events.emit('updateGameState', gameState);
     }
   }, [gameState]);
 
-  // 주사위 결과 처리
   useEffect(() => {
     if (!diceResult) return;
     setDiceRolled(true);
-
-    if (boardRef.current) {
-      boardRef.current.showDiceAnimation(diceResult.result);
-    }
-
-    // ~2초 후 도착 칸 배너
+    if (boardRef.current) boardRef.current.showDiceAnimation(diceResult.result);
     const t1 = setTimeout(() => {
-      if (diceResult.cellType) {
-        setLandedCell(diceResult.cellType);
-        setShowLanded(true);
-      }
+      if (diceResult.cellType) { setLandedCell(diceResult.cellType); setShowLanded(true); }
     }, 2000);
-
-    // ~3초 후 배너 숨김 (서버에서 3.2초 후 모달 이벤트 옴)
     const t2 = setTimeout(() => {
       setShowLanded(false);
       setTimeout(() => setLandedCell(null), 400);
     }, 3000);
-
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [diceResult]);
 
-  // 턴 변경 시 리셋
   useEffect(() => {
-    setDiceRolled(false);
-    setLandedCell(null);
-    setShowLanded(false);
+    setDiceRolled(false); setLandedCell(null); setShowLanded(false);
   }, [currentTurn]);
 
   const handleRollDice = useCallback(() => {
@@ -116,72 +134,66 @@ export default function GameBoardScreen() {
 
   const handleEndTurn = useCallback(() => {
     endTurn(roomCode);
-    setDiceRolled(false);
-    setActionModal(null);
-    setLandedCell(null);
+    setDiceRolled(false); setActionModal(null); setLandedCell(null);
   }, [roomCode]);
 
   const currentPlayerName = players.find(p => p.id === currentTurn)?.name;
 
+  // 모바일 세로 → 회전 안내 (Phaser는 숨기지 않고 display:none으로 유지)
   return (
     <div className="screen game-board-screen">
-      {/* Phaser 캔버스 */}
-      <div ref={containerRef} className="phaser-container" />
+      {/* 세로 모드 안내 - Phaser는 계속 살아있음 */}
+      {mobile && portrait && <RotatePrompt />}
 
-      {/* HUD 오버레이 */}
-      <div className={`hud-overlay ${isMobile ? 'hud-mobile' : 'hud-desktop'}`}>
+      {/* Phaser 캔버스: 세로 모드에도 DOM에 존재(숨김), 가로에서 보임 */}
+      <div
+        ref={containerRef}
+        style={{
+          position: 'absolute', inset: 0,
+          visibility: (mobile && portrait) ? 'hidden' : 'visible',
+        }}
+      />
 
-        {/* 상단 바 */}
-        <div className="hud-top">
-          <div>
-            {isMyTurn
-              ? <div className="my-turn-badge pulse">🎯 내 차례!</div>
-              : <div className="other-turn-badge">⏳ {currentPlayerName}의 차례</div>
-            }
+      {/* HUD - 가로 모드일 때만 표시 */}
+      {!(mobile && portrait) && (
+        <div className="hud-overlay">
+          <div className="hud-top">
+            <div>
+              {isMyTurn
+                ? <div className="my-turn-badge pulse">🎯 내 차례!</div>
+                : <div className="other-turn-badge">⏳ {currentPlayerName}의 차례</div>
+              }
+            </div>
+            <div className="hud-room-code">방 {roomCode}</div>
           </div>
-          <div className="hud-room-code">방 {roomCode}</div>
+
+          {landedCell && (
+            <div className={`landed-cell-banner ${showLanded ? 'show' : ''}`}>
+              <span className="landed-arrow">▼</span>
+              <span>{CELL_LABELS[landedCell] || landedCell} 도착!</span>
+              <span className="landed-arrow">▼</span>
+            </div>
+          )}
+
+          {currentEvent && !actionModal && <EventBanner event={currentEvent} />}
+
+          {isMyTurn && !diceRolled && (
+            <div className="dice-btn-wrap">
+              <button className="btn-dice" onClick={handleRollDice}>
+                <span className="dice-emoji">🎲</span>주사위 굴리기!
+              </button>
+            </div>
+          )}
+          {isMyTurn && diceRolled && !actionModal && !showLanded && (
+            <div className="dice-btn-wrap">
+              <button className="btn-end-turn" onClick={handleEndTurn}>턴 종료 →</button>
+            </div>
+          )}
+
+          <PlayerHUD players={gameState?.players || []} myId={playerId} isMobile={mobile} />
         </div>
+      )}
 
-        {/* 도착 칸 배너 */}
-        {landedCell && (
-          <div className={`landed-cell-banner ${showLanded ? 'show' : ''}`}>
-            <span className="landed-arrow">▼</span>
-            <span className="landed-label">{CELL_LABELS[landedCell] || landedCell} 도착!</span>
-            <span className="landed-arrow">▼</span>
-          </div>
-        )}
-
-        {/* 이벤트 배너 */}
-        {currentEvent && !actionModal && <EventBanner event={currentEvent} />}
-
-        {/* 주사위 버튼 */}
-        {isMyTurn && !diceRolled && (
-          <div className="dice-btn-wrap">
-            <button className="btn-dice" onClick={handleRollDice}>
-              <span className="dice-emoji">🎲</span>
-              주사위 굴리기!
-            </button>
-          </div>
-        )}
-
-        {/* 턴 종료 버튼 */}
-        {isMyTurn && diceRolled && !actionModal && !showLanded && (
-          <div className="dice-btn-wrap">
-            <button className="btn-end-turn" onClick={handleEndTurn}>
-              턴 종료 →
-            </button>
-          </div>
-        )}
-
-        {/* 플레이어 스탯 - 모바일은 하단, 데스크탑은 우측 */}
-        <PlayerHUD
-          players={gameState?.players || []}
-          myId={playerId}
-          isMobile={isMobile}
-        />
-      </div>
-
-      {/* 액션 모달 */}
       {actionModal && (
         <ActionModal
           type={actionModal}

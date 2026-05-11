@@ -16,13 +16,10 @@ export default function PlayerHUD({ players, myId, isMobile }) {
           className={`hud-player-card ${p.id === myId ? 'is-me' : ''}`}
           style={{ '--player-color': PLAYER_COLORS[i] }}
         >
-          {/* 플레이어 색상 띠 */}
           <div className="hud-color-bar" />
-
-          <div className="hud-avatar-wrap">
+          <div className="hud-left">
             <span className="hud-avatar">{PLAYER_EMOJIS[i]}</span>
           </div>
-
           <div className="hud-info">
             <div className="hud-name">
               {p.name}
@@ -31,13 +28,12 @@ export default function PlayerHUD({ players, myId, isMobile }) {
             <div className="hud-job">
               {JOB_EMOJIS[p.jobId] || '👤'} {p.jobName || '?'}
             </div>
-          </div>
-
-          <div className="hud-stats">
-            <div className="hud-stat"><span>💰</span><span>{(p.money   || 0).toLocaleString()}</span></div>
-            <div className="hud-stat"><span>🏦</span><span>{(p.savings || 0).toLocaleString()}</span></div>
-            <div className="hud-stat"><span>❤️</span><span>{p.happiness || 0}</span></div>
-            <div className="hud-stat"><span>📍</span><span>{p.position  || 0}칸</span></div>
+            <div className="hud-stats-row">
+              <span className="hud-stat">💰{(p.money || 0).toLocaleString()}</span>
+              <span className="hud-stat">🏦{(p.savings || 0).toLocaleString()}</span>
+              <span className="hud-stat">❤️{p.happiness || 0}</span>
+              <span className="hud-stat">📍{p.position || 0}칸</span>
+            </div>
           </div>
         </div>
       ))}
